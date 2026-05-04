@@ -4,7 +4,7 @@ Este documento contiene los puntos de acceso y propósitos de los aplicativos de
 
 | Servicio | URL / Acceso | Propósito |
 | :--- | :--- | :--- |
-| **Open WebUI** | [http://192.168.0.203:3005](http://192.168.0.203:3005) | Interfaz principal de IA (Chat, RAG, Documentos). |
+| **Open WebUI** | [http://192.168.0.203:3050](http://192.168.0.203:3050) | Interfaz principal de IA (Chat, RAG, Documentos). |
 | **OpenHands** | [http://192.168.0.203:3004](http://192.168.0.203:3004) | Agente de desarrollo autónomo y persistente. |
 | **Uptime Kuma** | [http://192.168.0.203:3001](http://192.168.0.203:3001) | Monitor de estado y salud de los servicios. |
 | **Supabase Studio** | [http://192.168.0.203:8000](http://192.168.0.203:8000) | Gestión de base de datos relacional y vectorial. |
