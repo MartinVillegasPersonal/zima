@@ -5,6 +5,8 @@ Este documento contiene los puntos de acceso y propósitos de los aplicativos de
 | Servicio | URL / Acceso | Propósito |
 | :--- | :--- | :--- |
 | **Open WebUI** | [http://192.168.0.203:3001](http://192.168.0.203:3001) | Interfaz principal de IA (Chat, RAG, Documentos). |
+| **OpenHands** | [http://192.168.0.203:3004](http://192.168.0.203:3004) | Agente de desarrollo autónomo y persistente. |
+| **Uptime Kuma** | [http://192.168.0.203:3001](http://192.168.0.203:3001) | Monitor de estado y salud de los servicios. |
 | **Supabase Studio** | [http://192.168.0.203:8000](http://192.168.0.203:8000) | Gestión de base de datos relacional y vectorial. |
 | **Ollama API** | [http://192.168.0.203:11434](http://192.168.0.203:11434) | Motor de ejecución de LLMs (Llama 3, Mistral, etc.). |
 | **Portainer** | [http://192.168.0.203:9000](http://192.168.0.203:9000) | Monitoreo y gestión de contenedores Docker. |
@@ -18,4 +20,4 @@ Este documento contiene los puntos de acceso y propósitos de los aplicativos de
 - **Auto-arranque:** Configurado mediante `/etc/fstab` y políticas de reinicio de Docker para estabilidad post-reinicio.
 - **Seguridad:** Las credenciales maestras de Postgres y Supabase están resguardadas en la bóveda de Vaultwarden.
 
-*Última actualización: 2026-05-01*
+*Última actualización: 2026-05-04*
