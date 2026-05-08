@@ -43,14 +43,49 @@ docker run -d \
 
 ---
 
-## 4. Plan de Migración Futura a GPU (RTX 5050)
+## 4. Optimización de Almacenamiento Docker (CasaOS)
+Para garantizar que **todas** las descargas de imágenes Docker (como las de Ollama, que son muy pesadas) se almacenen en el disco de 1TB y no saturen la eMMC nativa de la ZimaBlade, es necesario redirigir el directorio raíz de Docker.
 
-### Fase 1: Instalación de Hardware (Manual)
+```bash
+# 1. Detener Docker
+sudo systemctl stop docker
+
+# 2. Crear/Editar el archivo de configuración de Docker
+sudo nano /etc/docker/daemon.json
+```
+
+Añadir el siguiente contenido (reemplazando por la ruta real del disco de 1TB, por ejemplo `/DATA/AppData/docker_data` o `/media/devmon/DISCO/docker_data`):
+```json
+{
+  "data-root": "/ruta/real/a/tu/disco_1tb/docker_data"
+}
+```
+
+```bash
+# 3. Mover datos existentes (opcional pero recomendado)
+sudo rsync -aP /var/lib/docker/ /ruta/real/a/tu/disco_1tb/docker_data/
+
+# 4. Reiniciar Docker
+sudo systemctl start docker
+```
+
+---
+
+## 5. Plan de Migración Futura a GPU (RTX 5050)
+
+### Fase 1: Desinstalación del Ollama Actual (Modo CPU)
+- **Si fue instalado vía CasaOS UI**: Desinstalar directamente desde la interfaz web de CasaOS (Opciones de la app > Desinstalar) para evitar conflictos en el dashboard.
+- **Si fue instalado vía terminal**:
+  ```bash
+  docker rm -f ollama
+  ```
+
+### Fase 2: Instalación de Hardware (Manual)
 1. Apagar completamente el servidor.
 2. Conectar físicamente la RTX 5050 al puerto PCIe.
 3. Encender el equipo.
 
-### Fase 2: Instalación de Controladores
+### Fase 3: Instalación de Controladores
 Ejecutar la instalación del driver privativo de NVIDIA y el puente de Docker.
 ```bash
 sudo apt update
@@ -58,14 +93,27 @@ sudo apt install -y nvidia-driver-550 nvidia-container-toolkit
 sudo reboot
 ```
 
-### Fase 3: Recreación de Ollama (Modo GPU)
-```bash
-docker rm -f ollama
+### Fase 4: Recreación de Ollama (Modo GPU en CasaOS)
+Dado que se utiliza CasaOS, es altamente recomendable desplegar mediante un archivo `docker-compose.yml`. En la interfaz de CasaOS, ve a **App Store** > **Custom Install** > **Import** y pega la siguiente configuración:
 
-docker run -d --gpus all --name ollama \
-  -p ${OLLAMA_PORT}:${OLLAMA_PORT} \
-  -v ${EXTERNAL_DRIVE_PATH}/ollama-nvidia:/root/.ollama \
-  -v ${EXTERNAL_DRIVE_PATH}/ollama_models:/root/.ollama/models \
-  --restart always \
-  ollama/ollama:0.9.5
+```yaml
+name: ollama-nvidia
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    restart: always
+    ports:
+      - "${OLLAMA_PORT}:${OLLAMA_PORT}"
+    volumes:
+      - ${EXTERNAL_DRIVE_PATH}/ollama-nvidia:/root/.ollama
+      - ${EXTERNAL_DRIVE_PATH}/ollama_models:/root/.ollama/models
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
 ```
+*(Nota: Asegúrate de que las variables como `${EXTERNAL_DRIVE_PATH}` estén resueltas a sus rutas absolutas o correctamente inyectadas en el entorno de CasaOS).*
