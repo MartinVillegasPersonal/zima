@@ -2,7 +2,10 @@
 
 Este documento contiene las especificaciones de arquitectura y despliegue del Sistema Integrado de Cumplimiento Hogareño (S.I.C.H.) en el entorno de producción (ZimaBlade). 
 
-> **Nota de Seguridad:** Las credenciales de acceso, IPs y puertos han sido extraídos de este documento y deben configurarse localmente en un archivo `.env` basado en `.env.example`.
+> **Nota de Seguridad e Infraestructura:** 
+> - Las credenciales de acceso (protocolo SSH, usuario `casaos`, IP `192.168.0.203` y contraseña) se encuentran documentadas dentro de los scripts Python del repositorio (como `v9_ssh_tunnel.py` o `check_space.py`).
+> - Las rutas de los discos externos generalmente se encuentran en `/media/devmon/external_hdd` o bajo `/var/lib/casaos/files/AppData`.
+> - Las IPs y puertos deben configurarse localmente en un archivo `.env` basado en `.env.example`.
 
 ## 1. Arquitectura de Almacenamiento (Realizado)
 Para proteger la eMMC interna del servidor, los modelos pesados se alojan en un disco externo de 1TB.
@@ -94,7 +97,12 @@ sudo reboot
 ```
 
 ### Fase 4: Recreación de Ollama (Modo GPU en CasaOS)
-Dado que se utiliza CasaOS, es altamente recomendable desplegar mediante un archivo `docker-compose.yml`. En la interfaz de CasaOS, ve a **App Store** > **Custom Install** > **Import** y pega la siguiente configuración:
+Dado que se utiliza CasaOS, la vía más sencilla y **altamente recomendada** es usar la tienda de aplicaciones integrada:
+1. Abre la **App Store** en CasaOS.
+2. Busca e instala la aplicación oficial **Ollama(Nvidia GPU)**.
+3. Asegúrate de que, en los ajustes de la aplicación instalada (haciendo clic en opciones > Settings), los **volúmenes** apunten al disco de 1TB (ej. `/media/devmon/external_hdd/ollama-nvidia`).
+
+*(Alternativa)* Si la app no aparece o prefieres control absoluto, puedes desplegar manualmente. En la interfaz de CasaOS, ve a **App Store** > **Custom Install** > **Import** y pega la siguiente configuración `docker-compose.yml`:
 
 ```yaml
 name: ollama-nvidia
@@ -116,4 +124,4 @@ services:
               count: 1
               capabilities: [gpu]
 ```
-*(Nota: Asegúrate de que las variables como `${EXTERNAL_DRIVE_PATH}` estén resueltas a sus rutas absolutas o correctamente inyectadas en el entorno de CasaOS).*
+*(Nota: Asegúrate de que las variables como `${EXTERNAL_DRIVE_PATH}` estén resueltas a sus rutas absolutas, por ejemplo `/media/devmon/external_hdd`).*
