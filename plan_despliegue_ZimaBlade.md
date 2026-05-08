@@ -102,7 +102,7 @@ Dado que se utiliza CasaOS, la vía más sencilla y **altamente recomendada** es
 2. Busca e instala la aplicación oficial **Ollama(Nvidia GPU)**.
 3. Asegúrate de que, en los ajustes de la aplicación instalada (haciendo clic en opciones > Settings), los **volúmenes** apunten al disco de 1TB (ej. `/media/devmon/external_hdd/ollama-nvidia`).
 
-*(Alternativa)* Si la app no aparece o prefieres control absoluto, puedes desplegar manualmente. En la interfaz de CasaOS, ve a **App Store** > **Custom Install** > **Import** y pega la siguiente configuración `docker-compose.yml`:
+*(Alternativa)* Si la app no aparece o prefieres control absoluto, puedes desplegar manualmente. En la interfaz de CasaOS, ve a **App Store** > **Custom Install** > **Import** y pega la siguiente configuración `docker-compose.yml` (ya actualizada con tu ruta de disco y puerto):
 
 ```yaml
 name: ollama-nvidia
@@ -112,10 +112,10 @@ services:
     container_name: ollama
     restart: always
     ports:
-      - "${OLLAMA_PORT}:${OLLAMA_PORT}"
+      - "11434:11434"
     volumes:
-      - ${EXTERNAL_DRIVE_PATH}/ollama-nvidia:/root/.ollama
-      - ${EXTERNAL_DRIVE_PATH}/ollama_models:/root/.ollama/models
+      - /mnt/external_hdd/ollama-nvidia:/root/.ollama
+      - /mnt/external_hdd/ollama_models:/root/.ollama/models
     deploy:
       resources:
         reservations:
@@ -124,4 +124,3 @@ services:
               count: 1
               capabilities: [gpu]
 ```
-*(Nota: Asegúrate de que las variables como `${EXTERNAL_DRIVE_PATH}` estén resueltas a sus rutas absolutas, por ejemplo `/media/devmon/external_hdd`).*
