@@ -1,11 +1,18 @@
 import pexpect
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+ZIMA_HOST = os.getenv("ZIMA_HOST")
+ZIMA_USER = os.getenv("ZIMA_USER")
+ZIMA_PASS = os.getenv("ZIMA_PASS")
 import sys
 
 def setup_samba():
-    child = pexpect.spawn('ssh casaos@192.168.0.203', encoding='utf-8', timeout=300)
+    child = pexpect.spawn(f'ssh {ZIMA_USER}@{ZIMA_HOST}', encoding='utf-8', timeout=300)
     child.logfile = sys.stdout
     child.expect('password: ')
-    child.sendline('casaos')
+    child.sendline(ZIMA_PASS)
     child.expect(r'\$')
     
     # 1. Install Samba
@@ -17,9 +24,9 @@ def setup_samba():
     print("Setting Samba password for user 'casaos'...")
     child.sendline('sudo smbpasswd -a casaos')
     child.expect('New SMB password:')
-    child.sendline('casaos')
+    child.sendline(ZIMA_PASS)
     child.expect('Retype new SMB password:')
-    child.sendline('casaos')
+    child.sendline(ZIMA_PASS)
     child.expect(r'\$')
     
     # 3. Configure Share

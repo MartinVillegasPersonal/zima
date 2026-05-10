@@ -1,14 +1,21 @@
 import pexpect
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+ZIMA_HOST = os.getenv("ZIMA_HOST")
+ZIMA_USER = os.getenv("ZIMA_USER")
+ZIMA_PASS = os.getenv("ZIMA_PASS")
 
 def run():
-    child = pexpect.spawn('ssh casaos@192.168.0.203', encoding='utf-8', timeout=300)
+    child = pexpect.spawn(f'ssh {ZIMA_USER}@{ZIMA_HOST}', encoding='utf-8', timeout=300)
     i = child.expect(['password: ', 'Are you sure you want to continue connecting', pexpect.EOF, pexpect.TIMEOUT])
     if i == 1:
         child.sendline('yes')
         child.expect('password: ')
-        child.sendline('casaos')
+        child.sendline(ZIMA_PASS)
     elif i == 0:
-        child.sendline('casaos')
+        child.sendline(ZIMA_PASS)
     else:
         print("Failed to connect.")
         return

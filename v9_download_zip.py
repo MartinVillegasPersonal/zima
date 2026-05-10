@@ -1,18 +1,25 @@
 import pexpect
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+ZIMA_HOST = os.getenv("ZIMA_HOST")
+ZIMA_USER = os.getenv("ZIMA_USER")
+ZIMA_PASS = os.getenv("ZIMA_PASS")
 import sys
 
 def download_supabase():
-    child = pexpect.spawn('ssh casaos@192.168.0.203', encoding='utf-8', timeout=120)
+    child = pexpect.spawn(f'ssh {ZIMA_USER}@{ZIMA_HOST}', encoding='utf-8', timeout=120)
     child.logfile = sys.stdout
     
     child.expect('password: ')
-    child.sendline('casaos')
+    child.sendline(ZIMA_PASS)
     child.expect(r'\$')
     
     # Install unzip if not present
     child.sendline('sudo apt-get update && sudo apt-get install -y unzip')
-    child.expect('password for casaos:', timeout=10)
-    child.sendline('casaos')
+    child.expect('password for {ZIMA_USER}:', timeout=10)
+    child.sendline(ZIMA_PASS)
     child.expect(r'\$', timeout=60)
     
     # Download ZIP

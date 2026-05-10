@@ -1,11 +1,18 @@
 import pexpect
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+ZIMA_HOST = os.getenv("ZIMA_HOST")
+ZIMA_USER = os.getenv("ZIMA_USER")
+ZIMA_PASS = os.getenv("ZIMA_PASS")
 import sys
 
 def deploy_supabase():
-    child = pexpect.spawn('ssh casaos@192.168.0.203', encoding='utf-8', timeout=600)
+    child = pexpect.spawn(f'ssh {ZIMA_USER}@{ZIMA_HOST}', encoding='utf-8', timeout=600)
     child.logfile = sys.stdout
     child.expect('password: ')
-    child.sendline('casaos')
+    child.sendline(ZIMA_PASS)
     child.expect(r'\$')
     
     # 1. Config .env
@@ -34,9 +41,9 @@ def deploy_supabase():
     # 3. Deploy
     print("Starting Docker Compose...")
     child.sendline('sudo docker compose up -d')
-    i = child.expect([r'password for casaos:', r'Running'], timeout=30)
+    i = child.expect([r'password for {ZIMA_USER}:', r'Running'], timeout=30)
     if i == 0:
-        child.sendline('casaos')
+        child.sendline(ZIMA_PASS)
     
     # This might take a long time to pull images
     print("Waiting for containers to start (this can take 5-10 mins)...")

@@ -1,20 +1,27 @@
 import pexpect
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+ZIMA_HOST = os.getenv("ZIMA_HOST")
+ZIMA_USER = os.getenv("ZIMA_USER")
+ZIMA_PASS = os.getenv("ZIMA_PASS")
 import sys
 import json
 
 def migrate_docker_root():
-    child = pexpect.spawn('ssh casaos@192.168.0.203', encoding='utf-8', timeout=600)
+    child = pexpect.spawn(f'ssh {ZIMA_USER}@{ZIMA_HOST}', encoding='utf-8', timeout=600)
     child.logfile = sys.stdout
     child.expect('password: ')
-    child.sendline('casaos')
+    child.sendline(ZIMA_PASS)
     child.expect(r'\$')
     
     # 1. Stop all containers
     print("Stopping all containers...")
     child.sendline('sudo docker stop $(sudo docker ps -q)')
-    i = child.expect([r'password for casaos:', r'\$'])
+    i = child.expect([r'password for {ZIMA_USER}:', r'\$'])
     if i == 0:
-        child.sendline('casaos')
+        child.sendline(ZIMA_PASS)
         child.expect(r'\$')
     
     # 2. Stop Docker services

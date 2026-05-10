@@ -1,4 +1,11 @@
 import pexpect
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+ZIMA_HOST = os.getenv("ZIMA_HOST")
+ZIMA_USER = os.getenv("ZIMA_USER")
+ZIMA_PASS = os.getenv("ZIMA_PASS")
 import sys
 import time
 
@@ -10,7 +17,7 @@ def open_tunnel():
     
     try:
         child.expect('password: ')
-        child.sendline('casaos')
+        child.sendline(ZIMA_PASS)
         print("Tunnel established. Keep this running.")
         
         # Keep alive loop
