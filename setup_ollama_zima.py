@@ -53,7 +53,13 @@ def setup_ollama():
             "if nvidia-smi > /dev/null 2>&1; then echo 'GPU activa'; break; fi; "
             "echo 'Esperando driver...'; sleep 2; done; "
             "nvidia-smi > /dev/null 2>&1 || (echo 'ERROR: GPU no responde' && exit 1); "
-            "echo 'Esperando 30s para estabilizar CPU...'; sleep 30; "
+            "echo '=== Esperando a que la carga del CPU baje post-boot ===' && "
+            "for i in \\$(seq 1 30); do "
+            "load_int=\\$(cut -d. -f1 /proc/loadavg); "
+            "echo \\\"Carga de CPU actual: \\$load_int (intento \\$i/30)\\\"; "
+            "if [ \\\"\\$load_int\\\" -lt 8 ]; then "
+            "echo \\\"Carga de CPU aceptable (\\$load_int < 8). Procediendo...\\\"; "
+            "break; fi; sleep 5; done; "
             "exec ollama serve\""
         )
         child.sendline(ollama_cmd)

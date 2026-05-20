@@ -43,28 +43,37 @@ Durante este pico de carga y en el arranque inicial del sistema:
 Crear y guardar este documento (`PLAN_RESOLUCION_TIMEOUT_GPU.md`) en el repositorio local de Zima para mantener la trazabilidad de la arquitectura.
 
 ### Paso 2: Modificación del `docker-compose.yml` en la ZimaBlade
-Modificar el servicio `ollama` en `/var/lib/casaos/apps/ollama-nvidia/docker-compose.yml` sustituyendo el entrypoint actual por el script de verificación y enfriamiento:
+Modificar el servicio `ollama` en `/var/lib/casaos/apps/ollama-nvidia/docker-compose.yml` sustituyendo el entrypoint actual por el script de verificación y enfriamiento dinámico (basado en la carga de CPU real del host mediante `/proc/loadavg`):
 
 ```yaml
 entrypoint: 
   - "sh"
   - "-c"
   - |
-    echo "=== Iniciando script de verificación GPU ==="
+    echo '=== Iniciando verificación GPU ==='
     for i in $$(seq 1 30); do
       if nvidia-smi > /dev/null 2>&1; then
-        echo "GPU NVIDIA detectada y activa en el intento $$i/30."
+        echo 'GPU activa'
         break
       fi
-      echo "Esperando inicialización del driver NVIDIA (intento $$i/30)..."
+      echo 'Esperando driver...'
       sleep 2
     done
-    nvidia-smi > /dev/null 2>&1 || (echo "ERROR: GPU NVIDIA no responde tras 60 segundos" && exit 1)
-    echo "GPU validada. Esperando 30 segundos adicionales para permitir que se estabilice el uso del CPU post-boot..."
-    sleep 30
-    echo "=== Iniciando Ollama Serve ==="
+    nvidia-smi > /dev/null 2>&1 || (echo 'ERROR: GPU no responde' && exit 1)
+    echo '=== Esperando a que la carga del CPU baje post-boot ==='
+    for i in $$(seq 1 30); do
+      load_int=$$(cut -d. -f1 /proc/loadavg)
+      echo "Carga de CPU actual: $$load_int (intento $$i/30)"
+      if [ "$$load_int" -lt 8 ]; then
+        echo "Carga de CPU aceptable ($$load_int < 8). Procediendo..."
+        break
+      fi
+      sleep 5
+    done
     exec ollama serve
 ```
+
+> 💡 **Nota de Diseño:** Se cambió el delay estático de 30 segundos a una verificación dinámica basada en la carga de CPU porque, al arrancar la ZimaBlade, el stack completo de Supabase realiza migraciones de base de datos y levantamiento de contenedores pesados. Esto eleva la carga del CPU (`load average`) por encima de 24 durante los primeros 90 segundos. El bucle dinámico monitorea `/proc/loadavg` y solo permite el inicio de Ollama cuando la carga del procesador baja de 8 (o tras un timeout máximo de 150 segundos), garantizando el éxito del descubrimiento de CUDA sin timeouts.
 
 ### Paso 3: Aplicar Cambios y Desplegar
 Conectarse por SSH a la ZimaBlade y ejecutar el despliegue del stack modificado para aplicar los cambios del entrypoint.
